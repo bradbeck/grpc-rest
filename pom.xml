@@ -1,0 +1,175 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+
+    Copyright (c) 2021-present Brad Beck, All rights reserved.
+
+    This program is licensed to you under the Apache License Version 2.0,
+    and you may not use this file except in compliance with the Apache License Version 2.0.
+    You may obtain a copy of the Apache License Version 2.0 at http://www.apache.org/licenses/LICENSE-2.0.
+
+    Unless required by applicable law or agreed to in writing,
+    software distributed under the Apache License Version 2.0 is distributed on an
+    "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the Apache License Version 2.0 for the specific language governing permissions and limitations there under.
+
+-->
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>org.sonatype.buildsupport</groupId>
+    <artifactId>public-parent</artifactId>
+    <version>25</version>
+  </parent>
+
+  <groupId>org.example</groupId>
+  <artifactId>grpc-rest</artifactId>
+  <version>1.0.0-SNAPSHOT</version>
+  <name>gRPC REST Demo</name>
+
+  <inceptionYear>2021</inceptionYear>
+
+  <organization>
+    <name>Brad Beck</name>
+    <url>https://github.com/bradbeck</url>
+  </organization>
+
+  <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <maven.compiler.source>8</maven.compiler.source>
+    <maven.compiler.target>8</maven.compiler.target>
+    <protoc.version>3.15.0</protoc.version>
+    <grpc.version>1.35.0</grpc.version>
+    <slf4j.version>1.7.30</slf4j.version>
+    <rxjava.version>2.2.21</rxjava.version>
+    <reactive.grpc.version>1.0.1</reactive.grpc.version>
+    <grpc.osgi.generator.version>1.5.6</grpc.osgi.generator.version>
+  </properties>
+
+  <dependencies>
+    <dependency>
+      <groupId>io.reactivex.rxjava2</groupId>
+      <artifactId>rxjava</artifactId>
+      <version>${rxjava.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.salesforce.servicelibs</groupId>
+      <artifactId>rxgrpc-stub</artifactId>
+      <version>${reactive.grpc.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>io.grpc</groupId>
+      <artifactId>grpc-netty-shaded</artifactId>
+      <version>${grpc.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>io.grpc</groupId>
+      <artifactId>grpc-protobuf</artifactId>
+      <version>${grpc.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>io.grpc</groupId>
+      <artifactId>grpc-services</artifactId>
+      <version>${grpc.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>io.grpc</groupId>
+      <artifactId>grpc-stub</artifactId>
+      <version>${grpc.version}</version>
+    </dependency>
+    <dependency> <!-- necessary for Java 9+ -->
+      <groupId>org.apache.tomcat</groupId>
+      <artifactId>annotations-api</artifactId>
+      <version>6.0.53</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-api</artifactId>
+      <version>${slf4j.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-simple</artifactId>
+      <version>${slf4j.version}</version>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <resources>
+      <resource>
+        <directory>src/main/resources</directory>
+        <filtering>true</filtering>
+      </resource>
+    </resources>
+    <extensions>
+      <extension>
+        <groupId>kr.motd.maven</groupId>
+        <artifactId>os-maven-plugin</artifactId>
+        <version>1.7.0</version>
+      </extension>
+    </extensions>
+    <plugins>
+      <plugin>
+        <groupId>org.xolstice.maven.plugins</groupId>
+        <artifactId>protobuf-maven-plugin</artifactId>
+        <version>0.6.1</version>
+        <configuration>
+          <protocArtifact>com.google.protobuf:protoc:${protoc.version}:exe:${os.detected.classifier}</protocArtifact>
+          <pluginId>grpc-java</pluginId>
+          <pluginArtifact>io.grpc:protoc-gen-grpc-java:${grpc.version}:exe:${os.detected.classifier}</pluginArtifact>
+          <writeDescriptorSet>true</writeDescriptorSet>
+          <attachDescriptorSet>true</attachDescriptorSet>
+          <includeDependenciesInDescriptorSet>true</includeDependenciesInDescriptorSet>
+        </configuration>
+        <executions>
+          <execution>
+            <goals>
+              <goal>compile</goal>
+              <goal>compile-custom</goal>
+            </goals>
+            <phase>generate-sources</phase>
+            <configuration>
+              <protocPlugins>
+                <protocPlugin>
+                  <id>grpc-osgi-generator</id>
+                  <groupId>org.eclipse.ecf</groupId>
+                  <artifactId>grpc-osgi-generator</artifactId>
+                  <version>${grpc.osgi.generator.version}</version>
+                  <mainClass>org.eclipse.ecf.grpc.osgigenerator.OSGiGenerator</mainClass>
+                </protocPlugin>
+                <protocPlugin>
+                  <id>rxgrpc</id>
+                  <groupId>com.salesforce.servicelibs</groupId>
+                  <artifactId>rxgrpc</artifactId>
+                  <version>${reactive.grpc.version}</version>
+                  <mainClass>com.salesforce.rxgrpc.RxGrpcGenerator</mainClass>
+                </protocPlugin>
+              </protocPlugins>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-shade-plugin</artifactId>
+        <version>3.2.4</version>
+        <executions>
+          <execution>
+            <phase>package</phase>
+            <goals>
+              <goal>shade</goal>
+            </goals>
+            <configuration>
+              <transformers>
+                <transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer" />
+              </transformers>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
+</project>

@@ -1,0 +1,7 @@
+FROM openjdk:8
+
+ADD target/grpc-rest-${project.version}.jar /usr/local/
+ADD target/classes/startServer.sh /usr/local/
+RUN chmod +x /usr/local/startServer.sh
+
+CMD ["/usr/local/startServer.sh"]

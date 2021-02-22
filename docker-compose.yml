@@ -1,0 +1,19 @@
+version: '3'
+
+services:
+  grpc-server:
+    build:
+      context: .
+      dockerfile: target/classes/Dockerfile-server
+    ports:
+      - "50051:50051"
+
+  envoy-server:
+    build:
+      context: .
+      dockerfile: target/classes/Dockerfile-envoy
+    ports:
+      - "9901:9901"
+      - "5000:5000"
+    links:
+      - "grpc-server"
